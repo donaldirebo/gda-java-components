@@ -27,6 +27,7 @@ public class GatewayDeviceApp
 	
 	private String configFile = ConfigConst.DEFAULT_CONFIG_FILE_NAME;
 	private SystemPerformanceManager sysPerfMgr = null;
+	private DeviceDataManager deviceDataManager = null;
 	
 	// constructors
 	
@@ -41,6 +42,7 @@ public class GatewayDeviceApp
 		_Logger.info("Initializing GDA...");
 		
 		this.sysPerfMgr = new SystemPerformanceManager();
+		this.deviceDataManager = new DeviceDataManager();
 	}
 	
 	/**
@@ -55,6 +57,7 @@ public class GatewayDeviceApp
 		_Logger.info("Initializing GDA...");
 		
 		this.sysPerfMgr = new SystemPerformanceManager();
+		this.deviceDataManager = new DeviceDataManager();
 		
 		Map<String, String> argMap = parseArgs(args);
 		if (argMap.containsKey(ConfigConst.CONFIG_FILE_KEY)) {
@@ -99,33 +102,26 @@ public class GatewayDeviceApp
 	 */
 	private static Map<String, String> parseArgs(String[] args)
 	{
-		// store command line values in a map
-		Map<String, String> argMap = new HashMap<String, String>();
+		Map<String, String> map = new HashMap<>();
 		
-		if (args != null && args.length > 0)  {
-			// create the parser and options - only need one for now ("c" for config file)
-			CommandLineParser parser = new DefaultParser();
-			Options options = new Options();
-			options.addOption("c", true, "The relative or absolute path of the config file.");
-			try {
-				CommandLine cmdLineArgs = parser.parse(options, args);
-				if (cmdLineArgs.hasOption("c")) {
-					argMap.put(ConfigConst.CONFIG_FILE_KEY, cmdLineArgs.getOptionValue("c"));
-				} else {
-					_Logger.info("No custom config file specified. Using default.");
+		if (args != null && args.length > 0) {
+			for (int i = 0; i < args.length; ++i) {
+				String arg = args[i];
+				
+				if (arg.equals(ConfigConst.CONFIG_FILE_KEY)) {
+					if (i + 1 < args.length) {
+						map.put(ConfigConst.CONFIG_FILE_KEY, args[i + 1]);
+						++i;
+					}
 				}
-			} catch (ParseException e) {
-				_Logger.warning("Failed to parse command line args. Ignoring - using defaults.");
 			}
 		}
-		return argMap;
+		
+		return map;
 	}
 	
-	
-	// public methods
-	
 	/**
-	 * Initializes and starts the application.
+	 * Starts the application.
 	 * 
 	 */
 	public void startApp()
@@ -133,16 +129,16 @@ public class GatewayDeviceApp
 		_Logger.info("Starting GDA...");
 		
 		try {
-			if (this.sysPerfMgr.startManager()) {
-				_Logger.info("GDA started successfully.");
-			} else {
-				_Logger.warning("Failed to start system performance manager!");
-				
-				stopApp(-1);
-			}
+			this.sysPerfMgr.startManager();
+			_Logger.info("SystemPerformanceManager started.");
+			
+			this.deviceDataManager.startManager();
+			_Logger.info("DeviceDataManager started.");
+			
+			_Logger.info("GDA started successfully.");
+			
 		} catch (Exception e) {
 			_Logger.log(Level.SEVERE, "Failed to start GDA. Exiting.", e);
-			
 			stopApp(-1);
 		}
 	}
@@ -157,11 +153,12 @@ public class GatewayDeviceApp
 		_Logger.info("Stopping GDA...");
 		
 		try {
-			if (this.sysPerfMgr.stopManager()) {
-				_Logger.log(Level.INFO, "GDA stopped successfully with exit code {0}.", code);
-			} else {
-				_Logger.warning("Failed to stop system performance manager!");
-			}
+			this.deviceDataManager.stopManager();
+			_Logger.info("DeviceDataManager stopped.");
+			
+			this.sysPerfMgr.stopManager();
+			_Logger.log(Level.INFO, "GDA stopped successfully with exit code {0}.", code);
+			
 		} catch (Exception e) {
 			_Logger.log(Level.SEVERE, "Failed to cleanly stop GDA. Exiting.", e);
 		}
