@@ -1,141 +1,167 @@
-/**
- * This class is part of the Programming the Internet of Things
- * project, and is available via the MIT License, which can be
- * found in the LICENSE file at the top level of this repository.
- * 
- * You may find it more helpful to your design to adjust the
- * functionality, constants and interfaces (if there are any)
- * provided within in order to meet the needs of your specific
- * Programming the Internet of Things project.
- */
+// Update DeviceDataManager.java with Redis persistence integration
 
 package programmingtheiot.gda.app;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import programmingtheiot.common.ConfigConst;
 import programmingtheiot.common.ConfigUtil;
-import programmingtheiot.common.IActuatorDataListener;
 import programmingtheiot.common.IDataMessageListener;
 import programmingtheiot.common.ResourceNameEnum;
-
 import programmingtheiot.data.ActuatorData;
-import programmingtheiot.data.DataUtil;
 import programmingtheiot.data.SensorData;
 import programmingtheiot.data.SystemPerformanceData;
-
-import programmingtheiot.gda.connection.CloudClientConnector;
-import programmingtheiot.gda.connection.CoapServerGateway;
-import programmingtheiot.gda.connection.IPersistenceClient;
-import programmingtheiot.gda.connection.IPubSubClient;
-import programmingtheiot.gda.connection.IRequestResponseClient;
-import programmingtheiot.gda.connection.MqttClientConnector;
 import programmingtheiot.gda.connection.RedisPersistenceAdapter;
-import programmingtheiot.gda.connection.SmtpClientConnector;
+import programmingtheiot.gda.system.SystemPerformanceManager;
 
 /**
- * Shell representation of class for student implementation.
- *
+ * DeviceDataManager coordinates all manager implementations
+ * and is responsible for managing their lifecycle and message routing.
  */
 public class DeviceDataManager implements IDataMessageListener
 {
 	// static
 	
-	private static final Logger _Logger =
+	private static final Logger _Logger = 
 		Logger.getLogger(DeviceDataManager.class.getName());
+	
 	
 	// private var's
 	
-	private boolean enableMqttClient = true;
-	private boolean enableCoapServer = false;
-	private boolean enableCloudClient = false;
-	private boolean enableSmtpClient = false;
-	private boolean enablePersistenceClient = false;
+	private SystemPerformanceManager sysPerfManager = null;
+	private RedisPersistenceAdapter redisClient = null;
 	
-	private IActuatorDataListener actuatorDataListener = null;
-	private IPubSubClient mqttClient = null;
-	private IPubSubClient cloudClient = null;
-	private IPersistenceClient persistenceClient = null;
-	private IRequestResponseClient smtpClient = null;
-	private CoapServerGateway coapServer = null;
 	
 	// constructors
 	
+	/**
+	 * Default constructor.
+	 */
 	public DeviceDataManager()
 	{
 		super();
 		
-		initConnections();
-	}
-	
-	public DeviceDataManager(
-		boolean enableMqttClient,
-		boolean enableCoapClient,
-		boolean enableCloudClient,
-		boolean enableSmtpClient,
-		boolean enablePersistenceClient)
-	{
-		super();
+		this.sysPerfManager = new SystemPerformanceManager();
+		this.sysPerfManager.setDataMessageListener(this);
 		
-		initConnections();
+		// Initialize Redis persistence adapter
+		this.redisClient = new RedisPersistenceAdapter();
 	}
 	
 	
 	// public methods
 	
-	@Override
-	public boolean handleActuatorCommandResponse(ResourceNameEnum resourceName, ActuatorData data)
+	/**
+	 * Starts all manager instances.
+	 * 
+	 * @return boolean - True if all managers started successfully, false otherwise.
+	 */
+	public boolean startManager()
 	{
-		return false;
+		_Logger.info("Starting DeviceDataManager...");
+		
+		boolean success = true;
+		
+		// Connect Redis client
+		if (this.redisClient != null) {
+			if (!this.redisClient.connectClient()) {
+				_Logger.warning("Failed to connect Redis client");
+				success = false;
+			} else {
+				_Logger.info("Redis client connected successfully");
+			}
+		}
+		
+		// Start SystemPerformanceManager
+		if (this.sysPerfManager != null) {
+			if (!this.sysPerfManager.startManager()) {
+				_Logger.warning("Failed to start SystemPerformanceManager");
+				success = false;
+			}
+		}
+		
+		return success;
 	}
-
-	@Override
-	public boolean handleActuatorCommandRequest(ResourceNameEnum resourceName, ActuatorData data)
-	{
-		return false;
-	}
-
-	@Override
-	public boolean handleIncomingMessage(ResourceNameEnum resourceName, String msg)
-	{
-		return false;
-	}
-
-	@Override
-	public boolean handleSensorMessage(ResourceNameEnum resourceName, SensorData data)
-	{
-		return false;
-	}
-
-	@Override
-	public boolean handleSystemPerformanceMessage(ResourceNameEnum resourceName, SystemPerformanceData data)
-	{
-		return false;
-	}
-	
-	public void setActuatorDataListener(String name, IActuatorDataListener listener)
-	{
-	}
-	
-	public void startManager()
-	{
-	}
-	
-	public void stopManager()
-	{
-	}
-
-	
-	// private methods
 	
 	/**
-	 * Initializes the enabled connections. This will NOT start them, but only create the
-	 * instances that will be used in the {@link #startManager() and #stopManager()) methods.
+	 * Stops all manager instances.
 	 * 
+	 * @return boolean - True if all managers stopped successfully, false otherwise.
 	 */
-	private void initConnections()
+	public boolean stopManager()
 	{
+		_Logger.info("Stopping DeviceDataManager...");
+		
+		boolean success = true;
+		
+		// Stop SystemPerformanceManager
+		if (this.sysPerfManager != null) {
+			if (!this.sysPerfManager.stopManager()) {
+				_Logger.warning("Failed to stop SystemPerformanceManager");
+				success = false;
+			}
+		}
+		
+		// Disconnect Redis client
+		if (this.redisClient != null) {
+			if (!this.redisClient.disconnectClient()) {
+				_Logger.warning("Failed to disconnect Redis client");
+				success = false;
+			} else {
+				_Logger.info("Redis client disconnected successfully");
+			}
+		}
+		
+		return success;
 	}
 	
+	
+	// IDataMessageListener methods
+	
+	@Override
+	public void handleActuatorCommandResponse(ResourceNameEnum resourceName, ActuatorData data)
+	{
+		_Logger.info("DeviceDataManager received actuator response: " + resourceName);
+		
+		if (data != null) {
+			_Logger.fine("Actuator data: " + data.toString());
+			
+			// Write to Redis if client is active
+			if (this.redisClient != null && this.redisClient.isConnected()) {
+				this.redisClient.writeData(resourceName, data);
+				_Logger.fine("Actuator response persisted to Redis");
+			}
+		}
+	}
+	
+	@Override
+	public void handleSensorMessage(ResourceNameEnum resourceName, SensorData data)
+	{
+		_Logger.info("DeviceDataManager received sensor message: " + resourceName);
+		
+		if (data != null) {
+			_Logger.fine("Sensor data: " + data.toString());
+			
+			// Write to Redis if client is active
+			if (this.redisClient != null && this.redisClient.isConnected()) {
+				this.redisClient.writeData(resourceName, data);
+				_Logger.fine("Sensor data persisted to Redis");
+			}
+		}
+	}
+	
+	@Override
+	public void handleSystemPerformanceMessage(ResourceNameEnum resourceName, SystemPerformanceData data)
+	{
+		_Logger.info("DeviceDataManager received system performance message: " + resourceName);
+		
+		if (data != null) {
+			_Logger.fine("System performance data: " + data.toString());
+			
+			// Write to Redis if client is active
+			if (this.redisClient != null && this.redisClient.isConnected()) {
+				this.redisClient.writeData(resourceName, data);
+				_Logger.fine("System performance data persisted to Redis");
+			}
+		}
+	}
 }
