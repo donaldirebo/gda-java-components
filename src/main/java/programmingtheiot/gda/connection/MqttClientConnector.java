@@ -17,6 +17,7 @@ import programmingtheiot.common.ConfigConst;
 import programmingtheiot.common.ConfigUtil;
 import programmingtheiot.common.IDataMessageListener;
 import programmingtheiot.common.ResourceNameEnum;
+import programmingtheiot.gda.connection.IConnectionListener;
 
 /**
  * MQTT client connector for Gateway Device Application.
@@ -30,6 +31,7 @@ public class MqttClientConnector implements IPubSubClient, MqttCallbackExtended 
     private MqttConnectOptions connOpts;
     private MemoryPersistence persistence;
     private IDataMessageListener dataMsgListener;
+    private IConnectionListener connListener;
     
     private String host = ConfigConst.DEFAULT_HOST;
     private int port = ConfigConst.DEFAULT_MQTT_PORT;
@@ -206,6 +208,18 @@ public class MqttClientConnector implements IPubSubClient, MqttCallbackExtended 
         return false;
     }
     
+    /**
+     * Sets the connection listener
+     */
+    @Override
+    public boolean setConnectionListener(IConnectionListener listener) {
+        if (listener != null) {
+            this.connListener = listener;
+            return true;
+        }
+        return false;
+    }
+    
     // ========== MqttCallbackExtended Methods ==========
     
     /**
@@ -213,7 +227,7 @@ public class MqttClientConnector implements IPubSubClient, MqttCallbackExtended 
      */
     @Override
     public void connectComplete(boolean reconnect, String serverURI) {
-        _Logger.info("MQTT connection successful (is reconnect = " + reconnect + "). Broker: " + serverURI);
+        _Logger.info("Successfully connected to MQTT broker: " + serverURI);
     }
     
     /**
@@ -229,7 +243,7 @@ public class MqttClientConnector implements IPubSubClient, MqttCallbackExtended 
      */
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-        _Logger.fine("Delivered MQTT message with ID: " + token.getMessageId());
+        _Logger.info("Delivered MQTT message with ID: " + token.getMessageId());
     }
     
     /**
