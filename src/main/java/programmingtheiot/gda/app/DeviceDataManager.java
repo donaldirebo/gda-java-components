@@ -9,8 +9,10 @@
  * Programming the Internet of Things project.
  */
 package programmingtheiot.gda.app;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import programmingtheiot.common.ConfigConst;
 import programmingtheiot.common.ConfigUtil;
 import programmingtheiot.common.IActuatorDataListener;
@@ -21,6 +23,7 @@ import programmingtheiot.data.DataUtil;
 import programmingtheiot.data.SensorData;
 import programmingtheiot.data.SystemPerformanceData;
 import programmingtheiot.gda.connection.CloudClientConnector;
+import programmingtheiot.gda.connection.CoapClientConnector;
 import programmingtheiot.gda.connection.CoapServerGateway;
 import programmingtheiot.gda.connection.IPersistenceClient;
 import programmingtheiot.gda.connection.IPubSubClient;
@@ -44,6 +47,7 @@ public class DeviceDataManager implements IDataMessageListener
 	
 	private boolean enableMqttClient = false;
 	private boolean enableCoapServer = false;
+	private boolean enableCoapClient = false;
 	private boolean enableCloudClient = false;
 	private boolean enableSmtpClient = false;
 	private boolean enablePersistenceClient = false;
@@ -53,6 +57,7 @@ public class DeviceDataManager implements IDataMessageListener
 	private IPubSubClient cloudClient = null;
 	private IPersistenceClient persistenceClient = null;
 	private IRequestResponseClient smtpClient = null;
+	private IRequestResponseClient coapClient = null;
 	private CoapServerGateway coapServer = null;
 	
 	// constructors
@@ -75,6 +80,7 @@ public class DeviceDataManager implements IDataMessageListener
 	 */
 	public DeviceDataManager(
 		boolean enableMqttClient,
+		boolean enableCoapServer,
 		boolean enableCoapClient,
 		boolean enableCloudClient,
 		boolean enableSmtpClient,
@@ -86,7 +92,8 @@ public class DeviceDataManager implements IDataMessageListener
 		this.dataUtil = DataUtil.getInstance();
 		
 		this.enableMqttClient = enableMqttClient;
-		this.enableCoapServer = enableCoapClient;
+		this.enableCoapServer = enableCoapServer;
+		this.enableCoapClient = enableCoapClient;
 		this.enableCloudClient = enableCloudClient;
 		this.enableSmtpClient = enableSmtpClient;
 		this.enablePersistenceClient = enablePersistenceClient;
@@ -191,7 +198,19 @@ public class DeviceDataManager implements IDataMessageListener
 			_Logger.log(Level.INFO, "MQTT client started and subscribed to CDA topics.");
 		}
 		
-		// TODO: Start other managers (CoAP server, cloud client, persistence client, etc.)
+		if (this.enableCoapServer && this.coapServer != null) {
+			if (this.coapServer.startServer()) {
+				_Logger.info("CoAP server started.");
+			} else {
+				_Logger.severe("Failed to start CoAP server. Check log file for details.");
+			}
+		}
+		
+		if (this.enableCoapClient && this.coapClient != null) {
+			_Logger.log(Level.INFO, "CoAP client is enabled and ready to send requests.");
+		}
+		
+		// TODO: Start other managers (cloud client, persistence client, etc.)
 		
 		_Logger.log(Level.INFO, "DeviceDataManager started.");
 	}
@@ -215,7 +234,19 @@ public class DeviceDataManager implements IDataMessageListener
 			_Logger.log(Level.INFO, "MQTT client stopped.");
 		}
 		
-		// TODO: Stop other managers (CoAP server, cloud client, persistence client, etc.)
+		if (this.enableCoapServer && this.coapServer != null) {
+			if (this.coapServer.stopServer()) {
+				_Logger.info("CoAP server stopped.");
+			} else {
+				_Logger.severe("Failed to stop CoAP server. Check log file for details.");
+			}
+		}
+		
+		if (this.enableCoapClient && this.coapClient != null) {
+			_Logger.log(Level.INFO, "CoAP client stopped.");
+		}
+		
+		// TODO: Stop other managers (cloud client, persistence client, etc.)
 		
 		_Logger.log(Level.INFO, "DeviceDataManager stopped.");
 	}
@@ -240,7 +271,26 @@ public class DeviceDataManager implements IDataMessageListener
 			_Logger.log(Level.INFO, "MQTT client initialized.");
 		}
 		
-		// TODO: Initialize other connections (CoAP, Cloud, SMTP, Persistence)
+		// Read CoAP server enable flag from configuration
+		this.enableCoapServer = this.configUtil.getBoolean(
+			ConfigConst.GATEWAY_DEVICE, ConfigConst.ENABLE_COAP_SERVER_KEY);
+		
+		if (this.enableCoapServer) {
+			this.coapServer = new CoapServerGateway(this);
+			_Logger.log(Level.INFO, "CoAP server initialized.");
+		}
+		
+		// Read CoAP client enable flag from configuration
+		this.enableCoapClient = this.configUtil.getBoolean(
+			ConfigConst.GATEWAY_DEVICE, ConfigConst.ENABLE_COAP_CLIENT_KEY);
+		
+		if (this.enableCoapClient) {
+			this.coapClient = new CoapClientConnector();
+			this.coapClient.setDataMessageListener(this);
+			_Logger.log(Level.INFO, "CoAP client initialized.");
+		}
+		
+		// TODO: Initialize other connections (Cloud, SMTP, Persistence)
 		
 		_Logger.log(Level.INFO, "DeviceDataManager connections initialized.");
 	}

@@ -21,6 +21,9 @@ import org.junit.Test;
 
 import programmingtheiot.common.DefaultDataMessageListener;
 import programmingtheiot.common.IDataMessageListener;
+import programmingtheiot.common.ResourceNameEnum;
+import programmingtheiot.data.DataUtil;
+import programmingtheiot.data.SystemPerformanceData;
 import programmingtheiot.gda.connection.*;
 
 /**
@@ -100,6 +103,24 @@ public class CoapClientToServerConnectorTest
 	public void testConnectAndDiscover()
 	{
 		assertTrue(this.coapClient.sendDiscoveryRequest(DEFAULT_TIMEOUT));
+	}
+	
+	/**
+	 * Test system performance PUT message
+	 */
+	@Test
+	public void testSystemPerformancePutMessage()
+	{
+		SystemPerformanceData spData = new SystemPerformanceData();
+		
+		String jsonData = DataUtil.getInstance().systemPerformanceDataToJson(spData);
+		
+		_Logger.info("Sending System Performance PUT request with payload: " + jsonData);
+		
+		this.coapClient.sendPutRequest(
+			ResourceNameEnum.CDA_SYSTEM_PERF_MSG_RESOURCE, null, USE_DEFAULT_RESOURCES, jsonData, DEFAULT_TIMEOUT);
+		
+		_Logger.info("System Performance PUT request sent.");
 	}
 	
 }

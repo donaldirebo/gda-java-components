@@ -69,6 +69,15 @@ public class DataUtil
 		return null;
 	}
 	
+	public String systemStateDataToJson(SystemStateData sysStateData)
+	{
+		if (sysStateData != null) {
+			String jsonData = this.gson.toJson(sysStateData);
+			return jsonData;
+		}
+		return null;
+	}
+	
 	public ActuatorData jsonToActuatorData(String jsonData)
 	{
 		if (jsonData != null && jsonData.trim().length() > 0) {
@@ -91,6 +100,15 @@ public class DataUtil
 	{
 		if (jsonData != null && jsonData.trim().length() > 0) {
 			SystemPerformanceData data = this.gson.fromJson(jsonData, SystemPerformanceData.class);
+			return data;
+		}
+		return null;
+	}
+	
+	public SystemStateData jsonToSystemStateData(String jsonData)
+	{
+		if (jsonData != null && jsonData.trim().length() > 0) {
+			SystemStateData data = this.gson.fromJson(jsonData, SystemStateData.class);
 			return data;
 		}
 		return null;

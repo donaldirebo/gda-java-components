@@ -1,0 +1,23 @@
+#
+# Californium 3.14.0 Configuration
+#
+logging:
+  level: INFO
+
+coap:
+  network:
+    interfaces: []
+    port: 5683
+    dtls_port: 5684
+    
+  protocol:
+    ack_timeout: 2000
+    ack_random_factor: 1.5
+    max_retransmit: 4
+    nstart: 1
+    preferred_block_size: 512
+    max_message_size: 1024
+    
+  udp:
+    network_stage_receiver_thread_count: 1
+    network_stage_sender_thread_count: 1

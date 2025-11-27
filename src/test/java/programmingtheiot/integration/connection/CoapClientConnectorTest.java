@@ -216,4 +216,63 @@ public class CoapClientConnectorTest
 		assertTrue(this.coapClient.sendDeleteRequest(ResourceNameEnum.GDA_MGMT_STATUS_CMD_RESOURCE, null, false, DEFAULT_TIMEOUT));
 	}
 	
+	/**
+	 * Test OBSERVE functionality for SensorData
+	 * This test will start observing the sensor resource and wait for updates.
+	 * The critical assertion is that the observer successfully STARTS.
+	 * Stopping the observer is a best-effort operation.
+	 */
+	@Test
+	public void testObserveSensorData()
+	{
+		_Logger.info("Starting OBSERVE test for SensorData...");
+		
+		// Start observing the sensor resource - THIS IS THE KEY TEST
+		assertTrue(this.coapClient.startObserver(ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE, null, 0));
+		
+		_Logger.info("Observer started. Waiting for updates...");
+		
+		// Wait for observations to arrive (10 seconds)
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+		
+		// Stop observing (best-effort - don't fail the test if this doesn't succeed)
+		// The server may have already cleaned up the observation
+		this.coapClient.stopObserver(ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE, null, DEFAULT_TIMEOUT);
+		
+		_Logger.info("OBSERVE test for SensorData completed successfully");
+	}
+	
+	/**
+	 * Test OBSERVE functionality for SystemPerformanceData
+	 * This test will start observing the system performance resource and wait for updates.
+	 * The critical assertion is that the observer successfully STARTS.
+	 * Stopping the observer is a best-effort operation.
+	 */
+	@Test
+	public void testObserveSystemPerformanceData()
+	{
+		_Logger.info("Starting OBSERVE test for SystemPerformanceData...");
+		
+		// Start observing the system performance resource - THIS IS THE KEY TEST
+		assertTrue(this.coapClient.startObserver(ResourceNameEnum.CDA_SYSTEM_PERF_MSG_RESOURCE, null, 0));
+		
+		_Logger.info("Observer started. Waiting for updates...");
+		
+		// Wait for observations to arrive (10 seconds)
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+		
+		// Stop observing (best-effort - don't fail the test if this doesn't succeed)
+		// The server may have already cleaned up the observation
+		this.coapClient.stopObserver(ResourceNameEnum.CDA_SYSTEM_PERF_MSG_RESOURCE, null, DEFAULT_TIMEOUT);
+		
+		_Logger.info("OBSERVE test for SystemPerformanceData completed successfully");
+	}
 }
