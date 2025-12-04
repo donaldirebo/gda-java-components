@@ -6,7 +6,6 @@
 #
 # IMPORTANT: Edit this file to meet your local system requirements.
 #
-
 #
 # Cloud client configuration information
 #
@@ -23,7 +22,6 @@ enableAuth     = True
 enableCrypt    = True
 baseUrl        = 
 baseTopic      = 
-
 #
 # SMTP client configuration information
 #
@@ -34,22 +32,20 @@ port           = 25
 securePort     = 587
 enableAuth     = True
 enableCrypt    = True
-
 #
 # MQTT client configuration information
 #
 [Mqtt.GatewayService]
 credFile       = ./cred/PiotMqttCred.props
-certFile       = ./cert/PiotMqttLocalCertFile.pem
+certFile       = ./certs/server.crt
 host           = localhost
 port           = 1883
 securePort     = 8883
 defaultQoS     = 0
 keepAlive      = 60
 enableAuth     = False
-enableCrypt    = False
+enableCrypt    = True
 useAsyncClient = False
-
 #
 # CoAP client and server configuration information
 #
@@ -62,7 +58,6 @@ securePort     = 5684
 enableAuth     = False
 enableCrypt    = False
 enableConfirmedMsgs = True
-
 #
 # GDA specific configuration information
 #
