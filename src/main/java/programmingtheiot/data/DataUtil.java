@@ -3,7 +3,6 @@
  * project, and is available via the MIT License, which can be
  * found in the LICENSE file at the top level of this repository.
  */
-
 package programmingtheiot.data;
 
 import java.util.logging.Logger;
@@ -76,6 +75,44 @@ public class DataUtil
 			return jsonData;
 		}
 		return null;
+	}
+	
+	/**
+	 * Converts ActuatorData to a simplified TimeAndValue JSON format.
+	 * This is useful for cloud services that only need value and timestamp.
+	 * 
+	 * @param data The ActuatorData instance to convert.
+	 * @return String The JSON representation containing only value and timestamp.
+	 */
+	public String actuatorDataToTimeAndValueJson(ActuatorData data)
+	{
+		String jsonData = null;
+		
+		if (data != null) {
+			TimeAndValuePayloadData tvData = new TimeAndValuePayloadData(data);
+			jsonData = this.gson.toJson(tvData);
+		}
+		
+		return jsonData;
+	}
+	
+	/**
+	 * Converts SensorData to a simplified TimeAndValue JSON format.
+	 * This is useful for cloud services that only need value and timestamp.
+	 * 
+	 * @param data The SensorData instance to convert.
+	 * @return String The JSON representation containing only value and timestamp.
+	 */
+	public String sensorDataToTimeAndValueJson(SensorData data)
+	{
+		String jsonData = null;
+		
+		if (data != null) {
+			TimeAndValuePayloadData tvData = new TimeAndValuePayloadData(data);
+			jsonData = this.gson.toJson(tvData);
+		}
+		
+		return jsonData;
 	}
 	
 	public ActuatorData jsonToActuatorData(String jsonData)
