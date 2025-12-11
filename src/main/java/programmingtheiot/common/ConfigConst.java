@@ -123,10 +123,12 @@ public class ConfigConst
 	public static final int    ENV_DEVICE_TYPE           = 1000;
 	public static final int    HVAC_ACTUATOR_TYPE        = 1001;
 	public static final int    HUMIDIFIER_ACTUATOR_TYPE  = 1002;
+	public static final int    TILT_ALERT_ACTUATOR_TYPE  = 1003;
 	
 	public static final int    HUMIDITY_SENSOR_TYPE      = 1010;
 	public static final int    PRESSURE_SENSOR_TYPE      = 1012;
 	public static final int    TEMP_SENSOR_TYPE          = 1013;
+	public static final int    ACCELEROMETER_SENSOR_TYPE = 1014;
 	
 	public static final int    DISPLAY_DEVICE_TYPE       = 2000;
 	public static final int    LED_ACTUATOR_TYPE         = 2001;
@@ -148,9 +150,11 @@ public class ConfigConst
 	public static final String LED_ACTUATOR_NAME        = "LedActuator";
 	public static final String HUMIDIFIER_ACTUATOR_NAME = "HumidifierActuator";
 	public static final String HVAC_ACTUATOR_NAME       = "HvacActuator";
+	public static final String TILT_ALERT_ACTUATOR_NAME = "TiltAlertActuator";
 
 	// this is included here for testing purposes only
-	public static final String TEMP_SENSOR_NAME = "TempSensor";
+	public static final String TEMP_SENSOR_NAME         = "TempSensor";
+	public static final String ACCELEROMETER_SENSOR_NAME = "AccelerometerSensor";
 	
 	public static final String CPU_UTIL_NAME  = "CpuUtil";
 	public static final String DISK_UTIL_NAME = "DiskUtil";
@@ -200,6 +204,11 @@ public class ConfigConst
 	public static final String ENABLE_SYSTEM_PERF_KEY        = "enableSystemPerformance";
 	
 	public static final String ENABLE_RUN_FOREVER_KEY        = "enableRunForever";
+	
+	// Tilt/Accelerometer configuration keys
+	public static final String HANDLE_TILT_CHANGE_ON_DEVICE_KEY = "handleTiltChangeOnDevice";
+	public static final String TRIGGER_TILT_MAX_ANGLE_KEY = "triggerTiltMaxAngle";
+	public static final String TILT_MAX_TIME_PAST_THRESHOLD_KEY = "tiltMaxTimePastThreshold";
 	
 	public static final String AWS_CLOUD_SVC_NAME     = "AWS";
 	public static final String AZURE_CLOUD_SVC_NAME   = "Azure";

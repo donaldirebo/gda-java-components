@@ -80,7 +80,7 @@ public class GatewayDeviceApp
 		gwApp.startApp();
 		
 		try {
-			Thread.sleep(65000L);
+			Thread.sleep(300000L);
 		} catch (InterruptedException e) {
 			// ignore
 		}

@@ -6,24 +6,22 @@
 #
 # IMPORTANT: Edit this file to meet your local system requirements.
 #
-
 #
 # Cloud client configuration information
 #
 [Cloud.GatewayService]
-credFile       = ./cred/PiotCloudCred.props
-certFile       = ./cert/PiotCloudCert.pem
-host           = localhost
+credFile       = /home/donald/connecteddevices/cred/UbidotsCloudCred.props
+certFile       = /home/donald/connecteddevices/cert/UbidotsCloudCert.pem
+host           = industrial.api.ubidots.com
 port           = 1883
 securePort     = 8883
 defaultQoS     = 0
-keepAlive      = 60
+keepAlive      = 30
 useAsyncClient = True
 enableAuth     = True
 enableCrypt    = True
-baseUrl        = 
-baseTopic      = 
-
+baseUrl        = https://things.ubidots.com/api/v1.6/
+baseTopic      = /v1.6/devices/
 #
 # SMTP client configuration information
 #
@@ -34,13 +32,12 @@ port           = 25
 securePort     = 587
 enableAuth     = True
 enableCrypt    = True
-
 #
 # MQTT client configuration information
 #
 [Mqtt.GatewayService]
 credFile       = ./cred/PiotMqttCred.props
-certFile       = ./cert/PiotMqttLocalCertFile.pem
+certFile       = ./certs/server.crt
 host           = localhost
 port           = 1883
 securePort     = 8883
@@ -48,8 +45,7 @@ defaultQoS     = 0
 keepAlive      = 60
 enableAuth     = False
 enableCrypt    = False
-useAsyncClient = False
-
+useAsyncClient = True
 #
 # CoAP client and server configuration information
 #
@@ -62,7 +58,6 @@ securePort     = 5684
 enableAuth     = False
 enableCrypt    = False
 enableConfirmedMsgs = True
-
 #
 # GDA specific configuration information
 #
@@ -73,10 +68,15 @@ pollCycleSecs           = 60
 enableMqttClient        = True
 enableCoapServer        = True
 enableCoapClient        = True
-enableCloudClient       = False
+enableCloudClient       = True
 enableSmtpClient        = False
 enablePersistenceClient = False
 enableSystemPerformance = False
 testGdaDataPath         = /tmp/gda-data
 testCdaDataPath         = /tmp/cda-data
 testEmptyApp            = False
+handleHumidityChangeOnDevice = True
+humidityMaxTimePastThreshold = 10
+nominalHumiditySetting = 40.0
+triggerHumidifierFloor = 30.0
+triggerHumidifierCeiling = 50.0
